@@ -1,0 +1,5 @@
+	<%
+	Map<String,String> userMap = (HashMap)session.getAttribute("userMap"); 
+	out.print("name:"+userMap.get("name"));
+	%>
+	<h1><%=userMap.get("name") %></h1>
