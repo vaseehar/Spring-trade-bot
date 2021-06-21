@@ -6,10 +6,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TimerTask;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import com.example.springTradeBot.DAO.CandleStick;
 import com.example.springTradeBot.DAO.ExchangeInfo;
@@ -41,11 +43,10 @@ public class RSICalculator extends TimerTask {
 	public static ExchangeInfo exchangeInfo;
 
 	static boolean isJobOver = false;
-	
 
 	@Override
 	public void run() {
-		if(null == exchangeInfo) {
+		if (null == exchangeInfo) {
 			exchangeInfo = binanceServicesGenEP.getExchangeInfo();
 			OrderUtils.exchangeInfo = RSICalculator.exchangeInfo;
 		}
@@ -57,19 +58,30 @@ public class RSICalculator extends TimerTask {
 		}
 		for (String currencyString : currenciesList) {
 			String[] symbols = currencyString.split("\\|");
-			int i=0;
+			ExecutorService executorService = Executors.newFixedThreadPool(10);
+			List<Callable<String>> callableList = new ArrayList<Callable<String>>();
 			for (String symbol : symbols) {
 				if (!symbol.isBlank()) {
-					CandleStick[] candleSticks = binanceServicesGenEP.getCandleSticks(symbol, KlineIntervals.HOURLY);
-					try {
-						double rsi = RSI.calculate(Arrays.asList(candleSticks));
-						rsiMap.put(symbol, rsi);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
+
+					Callable<String> callable = () -> {
+						CandleStick[] candleSticks = binanceServicesGenEP.getCandleSticks(symbol, KlineIntervals.HOURLY);
+						try {
+							double rsi = RSI.calculate(Arrays.asList(candleSticks));
+							rsiMap.put(symbol, rsi);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+						return "done";};
+							
+					
+					callableList.add(callable);
 				}
 			}
-
+			try {
+				executorService.invokeAll(callableList);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 		generateRsiBuyAndSellMap();
 		isJobOver = true;
