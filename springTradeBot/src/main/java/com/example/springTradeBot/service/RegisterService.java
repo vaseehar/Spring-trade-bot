@@ -1,6 +1,6 @@
 package com.example.springTradeBot.service;
 
-import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,17 +13,12 @@ public class RegisterService {
 
 	@Autowired
 	private UserRegRepository userRegRepo;
+
 	public boolean isNewUser(String mobile) {
-		boolean isNewUser = true;
-		List<UserReg> userRegList = userRegRepo.findAll();
-		for(UserReg user : userRegList) {
-			if(mobile.equalsIgnoreCase(user.getMobile())) {
-				isNewUser = false;
-			}
-}
-		return isNewUser;
+		Optional<UserReg> userReg = userRegRepo.findByMobile(mobile);
+		return !userReg.isPresent();
 	}
-	
+
 	public void saveUser(UserReg userReg) {
 		userRegRepo.save(userReg);
 	}

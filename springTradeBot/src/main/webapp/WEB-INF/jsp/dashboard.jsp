@@ -11,20 +11,20 @@
 <script type="text/javascript" src="dashboard.js">
 </script>
 </head>
-<body>
+<body onload="myFunction();">
     <%@ include file="userDetailsFragment.jspf" %>
 	<form action="startTrade" method="post">
 	<label for="currency" value="Select ur currency:">Select ur currency:</label>
 	<select name="currency" id="currency" onchange="myFunction()">
-	<option value="USDT">USDT</option>
+	<option value="USDT" selected="selected">USDT</option>
 	<option value="BUSD">BUSD</option>
 	</select>
 		<p id="greeting"></p>
 		<div id="feedback"></div>
-		<div id="listOfcurrencies">
+		<div id="listOfcurrencies" >
 		</div>
-		<div id="submitButton" disabled="disabled">
-		<input type="submit" value="start autotrade">
+		<div id="submitButtonDiv" >
+		<input type="submit" value="start autotrade" disabled="disabled" id="submitButton">
 		</div>
 	</form>
 </body>
